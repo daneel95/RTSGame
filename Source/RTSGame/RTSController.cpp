@@ -46,51 +46,69 @@ void ARTSController::StopSelecting() {
 	PrintOnScreen("STOP SELECTIONS!");
 
 	FIntRect WorldSelectionFrame;
-
 	if (!GetSelectionFrameWorld(WorldSelectionFrame)) {
 		bCreatingSelectionFrame = false;
 		return;
 	}
 
 	GetAllActorsInSelectionFrame(WorldSelectionFrame, CurrentlySelectedActors);
-	FString t = "";
-	t.AppendInt(CurrentlySelectedActors.Num());
-	PrintOnScreen(t);
 	bCreatingSelectionFrame = false;
 }
 
-void ARTSController::GetAllActorsInSelectionFrame(FIntRect SelectionFrame, TArray<AActor*>& SelectedActors) {
-	// Clear all previously selected actors
+void ARTSController::GetAllActorsInSelectionFrame(FIntRect SelectionFrame, TArray<AActor*>& FinalSelectedActors) {
+	// Handle actors that will be deselected
 	for (AActor* SelectedActor : CurrentlySelectedActors) {
-		if (SelectedActor->IsA(AUnitActor::StaticClass())) {
-			AUnitActor* Unit = Cast<AUnitActor>(SelectedActor);
-			Unit->SetSelectionIndicatorVisibility(false);
-		}
+		HandleDeselectedActor(SelectedActor);
 	}
-	SelectedActors.Empty();
+	// Empty the selection array
+	FinalSelectedActors.Empty();
 
 	// TODO: If the selection area is really small consider it a click
 	if (SelectionFrame.Area() < 10) {
 		// Consider it a click
+		TArray<AActor*> SingleSelectedActor;
+		GetActorOnClick(FinalSelectedActors);
+		return;
 	}
 	// Iterate through all the actors and return the selected ones
 	// TODO: Get just player owned actors - maybe a tag on them - after I get all player stuff done
 	for (TActorIterator<AActor> SActor(GetWorld()); SActor; ++SActor) {
 		AActor* SelectedActor = *SActor;
-		if (!SelectedActor->IsA(AUnitActor::StaticClass())) {
-			continue;
-		}
-		
-		AUnitActor* Unit = Cast<AUnitActor>(SelectedActor);
-		FVector ActorLocation = Unit->GetActorLocation();
-
+		FVector ActorLocation = SelectedActor->GetActorLocation();
 		if (SelectionFrame.Contains(FIntPoint(ActorLocation.X, ActorLocation.Y))) {
-			Unit->SetSelectionIndicatorVisibility(true);
-			SelectedActors.Add(SelectedActor);
-			FString name;
-			SelectedActor->GetName(name);
-			PrintOnScreen(name);
+			HandleSelectedActor(SelectedActor, FinalSelectedActors);
 		}
+	}
+}
+
+void ARTSController::GetActorOnClick(TArray<AActor*>& FinalSelectedActors) {
+	FHitResult Hit;
+	if (!GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, Hit)) {
+		return;
+	}
+
+	HandleSelectedActor(Hit.GetActor(), FinalSelectedActors);
+}
+
+void ARTSController::HandleSelectedActor(AActor* SelectedActor, TArray<AActor*>& FinalSelectedActors) {
+	// Handle different actors differently
+	// TODO: check for owner
+	if (SelectedActor->IsA(AUnitActor::StaticClass())) {
+		AUnitActor* Unit = Cast<AUnitActor>(SelectedActor);
+		Unit->SetSelectionIndicatorVisibility(true);
+	}
+	else {
+		return;
+	}
+
+	// Add that actor to selected actors list
+	FinalSelectedActors.Add(SelectedActor);
+}
+
+void ARTSController::HandleDeselectedActor(AActor* DeselectedActor) {
+	if (DeselectedActor->IsA(AUnitActor::StaticClass())) {
+		AUnitActor* Unit = Cast<AUnitActor>(DeselectedActor);
+		Unit->SetSelectionIndicatorVisibility(false);
 	}
 }
 
@@ -158,8 +176,6 @@ void ARTSController::HandleRightMouseClick() {
 			Unit->MoveUnitToLocation(Hit.Location);
 		}
 	}
-
-
 }
 
 void ARTSController::AddToCameraMovementOffset(FVector2D OffsetToAdd) {

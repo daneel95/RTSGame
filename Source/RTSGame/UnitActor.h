@@ -13,9 +13,6 @@ class RTSGAME_API AUnitActor : public ACharacter
 
 private:
 	UPROPERTY(VisibleAnywhere)
-	class UStaticMeshComponent* UnitMesh;
-
-	UPROPERTY(VisibleAnywhere)
 	class UStaticMeshComponent* SelectionMesh;
 
 	// TODO - Unit Type Enum 

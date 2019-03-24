@@ -13,7 +13,6 @@ AUnitActor::AUnitActor()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	UnitMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("UnitMesh"));
 	SelectionMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SelectionMesh"));
 	static ConstructorHelpers::FObjectFinder<UMaterialInstanceConstant> SelectionMaterialInstance(TEXT("MaterialInstanceConstant'/Game/Materials/SelectionCircle_Inst.SelectionCircle_Inst'"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> PlaneStaticMesh(TEXT("StaticMesh'/Engine/BasicShapes/Plane.Plane'"));
@@ -22,7 +21,6 @@ AUnitActor::AUnitActor()
 	SelectionMesh->SetMaterial(0, SelectionMaterialInstance.Object);
 	SetSelectionIndicatorVisibility(false);
 
-	UnitMesh->AttachTo(RootComponent);
 	SelectionMesh->AttachTo(RootComponent);
 
 	this->GetCapsuleComponent()->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);

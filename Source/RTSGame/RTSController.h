@@ -26,6 +26,12 @@ private:
 
 	/* Right click handler function */
 	void HandleRightMouseClick();
+
+	/* Handle a selected actor accordingly */
+	void HandleSelectedActor(AActor* SelectedActor, TArray<AActor*>& FinalSelectedActors);
+
+	/* Handle an actor that will be deselected */
+	void HandleDeselectedActor(AActor* DeselectedActor);
 	
 protected:
 	virtual void SetupInputComponent() override;
@@ -39,8 +45,11 @@ public:
 	/* Create world selection frame */
 	bool GetSelectionFrameWorld(FIntRect& OutSelectionFrame);
 
+	/* Get the actor that was click (for really small / click selections) */
+	void GetActorOnClick(TArray<AActor*>& FinalSelectedActors);
+
 	/* Get all actors in (world) selection frame */
-	void GetAllActorsInSelectionFrame(FIntRect SelectionFrame, TArray<AActor*>& SelectedActors);
+	void GetAllActorsInSelectionFrame(FIntRect SelectionFrame, TArray<AActor*>& FinalSelectedActors);
 	
 	/* Add to camera offset - for handling screen selection frame properly */
 	void AddToCameraMovementOffset(FVector2D OffsetToAdd);
